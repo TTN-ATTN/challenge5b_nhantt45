@@ -6,6 +6,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\ChallengeController;
 use App\Http\Middleware\CheckConcurrentLogin;
 
 // Các route không cần đăng nhập
@@ -39,4 +40,10 @@ Route::middleware(['auth', CheckConcurrentLogin::class])->group(function () {
     Route::post('/assignments/unsubmit', [AssignmentController::class, 'unsubmit'])->name('assignments.unsubmit');
     Route::post('/assignments/grade', [AssignmentController::class, 'grade'])->name('assignments.grade');
     Route::post('/assignments/delete', [AssignmentController::class, 'destroy'])->name('assignments.delete');
+
+    // Module Giải đố (Challenges)
+    Route::get('/challenges', [ChallengeController::class, 'index'])->name('challenges.index');
+    Route::post('/challenges/create', [ChallengeController::class, 'store'])->name('challenges.store');
+    Route::post('/challenges/submit', [ChallengeController::class, 'submitAnswer'])->name('challenges.submit');
+    Route::post('/challenges/delete', [ChallengeController::class, 'destroy'])->name('challenges.delete');
 });
