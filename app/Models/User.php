@@ -2,48 +2,37 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    // Các trường được phép thêm/sửa
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'username', 'password', 'full_name', 'email', 'phone_number', 'avatar', 'role', 'session_token'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', 'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+    // Định nghĩa các mối quan hệ
+    public function assignments() {
+        return $this->hasMany(Assignment::class, 'teacher_id');
+    }
+
+    public function submissions() {
+        return $this->hasMany(Submission::class, 'student_id');
+    }
+
+    public function sentMessages() {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function receivedMessages() {
+        return $this->hasMany(Message::class, 'receiver_id');
     }
 }
