@@ -125,7 +125,9 @@ class AssignmentController extends Controller
             'score.numeric' => 'Điểm số không hợp lệ.'
         ]);
 
-        $submission = Submission::findOrFail($validated['submission_id']);
+        $submission = Submission::with('assignment')->findOrFail($validated['submission_id']);
+        if ($submission->assignment->teacher_id !== Auth::id()) abort(403);
+
         $submission->score = $validated['score'];
         $submission->save();
 
