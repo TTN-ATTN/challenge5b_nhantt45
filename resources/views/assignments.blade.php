@@ -71,7 +71,7 @@
                         {!! nl2br(e($hw->description)) !!}
                     </div>
 
-                    <a href="{{ $hw->file_path }}" download class="inline-block bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-bold py-2 px-4 rounded shadow transition mb-4">Tải Đề Bài Về</a>
+                    <a href="{{ route('download.assignment', $hw->id) }}" class="inline-block bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-bold py-2 px-4 rounded shadow transition mb-4">Tải Đề Bài Về</a>
 
                     @if(Auth::user()->role === 'student')
                         <div class="mt-4 pt-4 border-t border-gray-200">
@@ -142,7 +142,7 @@
                                                 @endif
                                             </div>
 
-                                            <a href="{{ $sub->file_path }}" download class="text-cyan-600 hover:text-cyan-800 text-sm font-medium hover:underline whitespace-nowrap">Tải bài làm</a>
+                                            <a href="{{ route('download.submission', $sub->id) }}" class="text-cyan-600 hover:text-cyan-800 text-sm font-medium hover:underline whitespace-nowrap">Tải bài làm</a>
 
                                             <form action="{{ route('assignments.grade') }}" method="POST" class="flex items-center gap-2">
                                                 @csrf

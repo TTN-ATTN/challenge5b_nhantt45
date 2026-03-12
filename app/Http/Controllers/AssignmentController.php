@@ -14,10 +14,10 @@ class AssignmentController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         // Eloquent Eager Loading: Tự động JOIN bảng teacher và submissions (kèm student)
         $assignments = Assignment::with(['teacher', 'submissions.student'])->orderBy('created_at', 'desc')->get();
-        
+
         $mySubmissions = collect();
         if ($user->role === 'student') {
             // Lấy tất cả bài nộp của sinh viên này, dùng keyBy để dễ truy xuất theo assignment_id
@@ -44,7 +44,8 @@ class AssignmentController extends Controller
             'deadline.date' => 'Deadline không hợp lệ.'
         ]);
 
-        $path = $request->file('assignment_file')->store('assignments', 'public');
+        // hàm store tự hash tên file và lưu vào storage/app/assignments, trả về đường dẫn đã hash
+        $path = $request->file('assignment_file')->store('assignments', 'local');
 
         Assignment::create([
             'teacher_id' => Auth::id(),
@@ -78,11 +79,11 @@ class AssignmentController extends Controller
         $existingSubmission = Submission::where('assignment_id', $assignmentId)->where('student_id', $studentId)->first();
         if ($existingSubmission) {
             $oldFilePath = str_replace('/storage/', '', $existingSubmission->file_path);
-            Storage::disk('public')->delete($oldFilePath);
+            Storage::disk('local')->delete($oldFilePath);
         }
 
         // Upload file mới
-        $path = $request->file('submission_file')->store('submissions', 'public');
+        $path = $request->file('submission_file')->store('submissions', 'local');
 
         // Tạo mới hoặc Cập nhật
         Submission::updateOrCreate(
@@ -101,9 +102,10 @@ class AssignmentController extends Controller
         $submission = Submission::findOrFail($request->submission_id);
         if ($submission->student_id !== Auth::id()) abort(403);
 
-        // Xóa file vật lý
-        Storage::disk('public')->delete(str_replace('/storage/', '', $submission->file_path));
-        
+        // Code MỚI: Xóa file vật lý bằng basename để chống Path Traversal
+        $filename = basename($submission->file_path);
+        Storage::disk('local')->delete('submissions/' . $filename);
+
         $submission->delete();
 
         return back()->with('toast_success', 'Đã gỡ bài nộp!');
@@ -139,12 +141,13 @@ class AssignmentController extends Controller
         if ($assignment->teacher_id !== Auth::id()) abort(403);
 
         // Xóa file đề bài vật lý
-        Storage::disk('public')->delete(str_replace('/storage/', '', $assignment->file_path));
+        $filename = basename($assignment->file_path);
+        Storage::disk('local')->delete('assignments/' . $filename);
 
-        // Note: Do có cascade on delete ở DB, các submission cũng sẽ bị xóa. 
-        // Nếu muốn dọn sạch luôn file submission vật lý thì thêm vòng lặp xóa file.
+        // Xóa sạch luôn file submission vật lý của sinh viên
         foreach ($assignment->submissions as $sub) {
-            Storage::disk('public')->delete(str_replace('/storage/', '', $sub->file_path));
+            $subFileName = basename($sub->file_path);
+            Storage::disk('local')->delete('submissions/' . $subFileName);
         }
 
         $assignment->delete();

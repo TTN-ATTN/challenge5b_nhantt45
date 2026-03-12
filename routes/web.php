@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\ChallengeController;
+use App\Http\Controllers\FileController;
 use App\Http\Middleware\CheckConcurrentLogin;
 
 // Các route không cần đăng nhập
@@ -46,4 +47,7 @@ Route::middleware(['auth', CheckConcurrentLogin::class])->group(function () {
     Route::post('/challenges/create', [ChallengeController::class, 'store'])->name('challenges.store');
     Route::post('/challenges/submit', [ChallengeController::class, 'submitAnswer'])->name('challenges.submit');
     Route::post('/challenges/delete', [ChallengeController::class, 'destroy'])->name('challenges.delete');
+
+    Route::get('/download/assignment/{id}', [FileController::class, 'downloadAssignment'])->name('download.assignment');
+    Route::get('/download/submission/{id}', [FileController::class, 'downloadSubmission'])->name('download.submission');
 });

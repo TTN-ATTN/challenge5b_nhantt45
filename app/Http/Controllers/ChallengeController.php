@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ChallengeController extends Controller
 {
-    // Hàm lọc dấu tiếng Việt từ code cũ của bạn
+    // lọc dấu tiếng Việt
     private function normalizeString($str) {
         $str = mb_strtolower(trim($str), 'UTF-8');
         
@@ -53,14 +53,12 @@ class ChallengeController extends Controller
 
         $file = $request->file('secret_file');
         
-        // Logic từ code cũ: Tên file là đáp án
-        $fileName = $file->getClientOriginalName(); // VD: Sơn Tùng M-TP.txt
+        $fileName = $file->getClientOriginalName(); 
         $rawAnswer = pathinfo($fileName, PATHINFO_FILENAME); // Lấy chữ: Sơn Tùng M-TP
         $answer = $this->normalizeString($rawAnswer); // Thành: son tung m-tp
-        $fileHash = md5($answer); // Băm ra mã MD5
+        $fileHash = md5($answer); 
 
-        // Lưu file với tên là chuỗi hash
-        $file->storeAs('challenges', $fileHash . '.txt', 'public');
+        $file->storeAs('challenges', $fileHash . '.txt', 'local');
 
         Challenge::create([
             'teacher_id' => Auth::id(),
@@ -89,10 +87,10 @@ class ChallengeController extends Controller
         if ($inputHash === $challenge->file_hash) {
             $filePath = 'challenges/' . $inputHash . '.txt';
             
-            if (Storage::disk('public')->exists($filePath)) {
-                $content = Storage::disk('public')->get($filePath);
+            if (Storage::disk('local')->exists($filePath)) {
+                $content = Storage::disk('local')->get($filePath);
                 
-                // Trả về kèm theo nội dung file giải mã thành công (giống code cũ)
+                // Trả về kèm theo nội dung file giải mã thành công
                 return back()
                     ->with('toast_success', 'Chúc mừng! Đáp án chính xác.')
                     ->with('solved_id', $challenge->id)
@@ -113,8 +111,8 @@ class ChallengeController extends Controller
         if ($challenge->teacher_id !== Auth::id()) abort(403);
 
         $filePath = 'challenges/' . $challenge->file_hash . '.txt';
-        if (Storage::disk('public')->exists($filePath)) {
-            Storage::disk('public')->delete($filePath);
+        if (Storage::disk('local')->exists($filePath)) {
+            Storage::disk('local')->delete($filePath);
         }
         
         $challenge->delete();
