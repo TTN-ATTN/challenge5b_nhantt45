@@ -26,11 +26,12 @@ class FileController extends Controller
         return Storage::disk('local')->download($path, $downloadName);
     }
 
-    // Tải bài nộp (Chỉ Giáo viên hoặc chính Sinh viên đó)
+    // Tải bài nộp 
     public function downloadSubmission($id)
     {
         $submission = Submission::with(['student', 'assignment'])->findOrFail($id);
         
+        // Chỉ giáo viên hoặc chính sinh viên đó mới được tải file nộp về
         if (Auth::user()->role !== 'teacher' && Auth::id() !== $submission->student_id) {
             abort(403, 'Bạn không có quyền tải file này.');
         }
@@ -45,7 +46,7 @@ class FileController extends Controller
         
         // Loại bỏ các ký tự đặc biệt có thể gây lỗi trên Windows/Mac
         $safeUsername = preg_replace('/[^a-zA-Z0-9_-]/', '', $submission->student->username);
-        $safeAssignmentTitle = Str::slug($submission->assignment->title, '_'); // Tạo slug (vd: Bai_Tap_Toan_1)
+        $safeAssignmentTitle = Str::slug($submission->assignment->title, '_'); 
         
         $downloadName = $safeUsername . '_' . $safeAssignmentTitle . '_SubID' . $submission->id . '.' . $extension;
 

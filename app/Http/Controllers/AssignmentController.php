@@ -100,9 +100,10 @@ class AssignmentController extends Controller
         if (Auth::user()->role !== 'student') abort(403);
 
         $submission = Submission::findOrFail($request->submission_id);
+        // Chỉ sinh viên đó mới được gỡ bài nộp của mình
         if ($submission->student_id !== Auth::id()) abort(403);
 
-        // Code MỚI: Xóa file vật lý bằng basename để chống Path Traversal
+        // Xóa file vật lý bằng basename để chống Path Traversal
         $filename = basename($submission->file_path);
         Storage::disk('local')->delete('submissions/' . $filename);
 
@@ -126,6 +127,8 @@ class AssignmentController extends Controller
         ]);
 
         $submission = Submission::with('assignment')->findOrFail($validated['submission_id']);
+
+        // Chỉ giáo viên của bài tập đó mới được chấm điểm
         if ($submission->assignment->teacher_id !== Auth::id()) abort(403);
 
         $submission->score = $validated['score'];

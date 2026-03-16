@@ -90,7 +90,6 @@ class ChallengeController extends Controller
             if (Storage::disk('local')->exists($filePath)) {
                 $content = Storage::disk('local')->get($filePath);
                 
-                // Trả về kèm theo nội dung file giải mã thành công
                 return back()
                     ->with('toast_success', 'Chúc mừng! Đáp án chính xác.')
                     ->with('solved_id', $challenge->id)
@@ -108,6 +107,7 @@ class ChallengeController extends Controller
         if (Auth::user()->role !== 'teacher') abort(403);
 
         $challenge = Challenge::findOrFail($request->challenge_id);
+        // Chỉ giáo viên tạo thử thách đó mới được xóa
         if ($challenge->teacher_id !== Auth::id()) abort(403);
 
         $filePath = 'challenges/' . $challenge->file_hash . '.txt';
